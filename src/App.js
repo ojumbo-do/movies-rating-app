@@ -59,6 +59,20 @@ export default function App() {
   );
 }
 
+const Button = ({ children, onClick, className }) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  const handleToggle = () => {
+    setIsOpen((open) => !open);
+  };
+
+  return (
+    <button className={className} onClick={handleToggle}>
+      {children}
+    </button>
+  );
+};
+
 const NavBar = () => {
   return (
     <nav className="nav-bar">
@@ -109,18 +123,13 @@ const Main = ({ movies }) => {
   );
 };
 
-const ListBox = () => {
-  const [isOpen1, setIsOpen1] = useState(true);
-
+const ListBox = ({ onClick, children, isOpen }) => {
   return (
     <div className="box">
-      <button
-        className="btn-toggle"
-        onClick={() => setIsOpen1((open) => !open)}
-      >
-        {isOpen1 ? "–" : "+"}
-      </button>
-      {isOpen1 && <MovieList />}
+      <Button className="btn-toggle" onClick={onClick}>
+        {isOpen ? "–" : "+"}
+      </Button>
+      {isOpen && <MovieList />}
     </div>
   );
 };
@@ -154,11 +163,7 @@ const Movie = ({ movie }) => {
 
 const WatchedBox = () => {
   const [watched, setWatched] = useState(tempWatchedData);
-
   const [isOpen2, setIsOpen2] = useState(true);
-  const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
-  const avgUserRating = average(watched.map((movie) => movie.userRating));
-  const avgRuntime = average(watched.map((movie) => movie.runtime));
 
   return (
     <div className="box">
@@ -170,52 +175,73 @@ const WatchedBox = () => {
       </button>
       {isOpen2 && (
         <>
-          <div className="summary">
-            <h2>Movies you watched</h2>
-            <div>
-              <p>
-                <span>#️⃣</span>
-                <span>{watched.length} movies</span>
-              </p>
-              <p>
-                <span>⭐️</span>
-                <span>{avgImdbRating}</span>
-              </p>
-              <p>
-                <span>🌟</span>
-                <span>{avgUserRating}</span>
-              </p>
-              <p>
-                <span>⏳</span>
-                <span>{avgRuntime} min</span>
-              </p>
-            </div>
-          </div>
-
-          <ul className="list">
-            {watched.map((movie) => (
-              <li key={movie.imdbID}>
-                <img src={movie.Poster} alt={`${movie.Title} poster`} />
-                <h3>{movie.Title}</h3>
-                <div>
-                  <p>
-                    <span>⭐️</span>
-                    <span>{movie.imdbRating}</span>
-                  </p>
-                  <p>
-                    <span>🌟</span>
-                    <span>{movie.userRating}</span>
-                  </p>
-                  <p>
-                    <span>⏳</span>
-                    <span>{movie.runtime} min</span>
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <WatchedSummary watched={watched} />
+          <WatchedList watched={watched} />
         </>
       )}
     </div>
+  );
+};
+
+const WatchedSummary = ({ watched }) => {
+  const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
+  const avgUserRating = average(watched.map((movie) => movie.userRating));
+  const avgRuntime = average(watched.map((movie) => movie.runtime));
+
+  return (
+    <div className="summary">
+      <h2>Movies you watched</h2>
+      <div>
+        <p>
+          <span>#️⃣</span>
+          <span>{watched.length} movies</span>
+        </p>
+        <p>
+          <span>⭐️</span>
+          <span>{avgImdbRating}</span>
+        </p>
+        <p>
+          <span>🌟</span>
+          <span>{avgUserRating}</span>
+        </p>
+        <p>
+          <span>⏳</span>
+          <span>{avgRuntime} min</span>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const WatchedList = ({ watched }) => {
+  return (
+    <ul className="list">
+      {watched.map((movie) => (
+        <Watched movie={movie} key={movie.imdbID} />
+      ))}
+    </ul>
+  );
+};
+
+const Watched = ({ movie }) => {
+  return (
+    <li>
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
+      <div>
+        <p>
+          <span>⭐️</span>
+          <span>{movie.imdbRating}</span>
+        </p>
+        <p>
+          <span>🌟</span>
+          <span>{movie.userRating}</span>
+        </p>
+        <p>
+          <span>⏳</span>
+          <span>{movie.runtime} min</span>
+        </p>
+      </div>
+    </li>
   );
 };
