@@ -281,7 +281,8 @@ const Movie = ({ movie, onSelectMovie }) => {
 };
 
 const MovieDetails = ({ selectedId, onCloseMovie }) => {
-  const [movie, setMovies] = useState({});
+  const [movie, setMovie] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     Title: title,
@@ -297,12 +298,15 @@ const MovieDetails = ({ selectedId, onCloseMovie }) => {
 
   useEffect(() => {
     async function getMovieDetails() {
+      setIsLoading(true);
+
       const response = await fetch(
         `http://www.omdbapi.com/?apikey=${API_KEY}&i=${selectedId}`
       );
+
       const data = await response.json();
-      setMovies(data);
-      console.log(data);
+      setMovie(data);
+      setIsLoading(false);
     }
 
     getMovieDetails();
@@ -310,29 +314,37 @@ const MovieDetails = ({ selectedId, onCloseMovie }) => {
 
   return (
     <div className="details">
-      <header>
-        <button className="btn-back" onClick={onCloseMovie}>
-          &larr;
-        </button>
-        <img src={poster} alt={`${title} poster`} />
-        <div className="details-overview">
-          <h2>{title}</h2>
-          <p>
-            {released} &bull; {runtime}
-          </p>
-          <p>{genre}</p>
-          <p>⭐ {imdbRating} IMDb rating</p>
-        </div>
-      </header>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <header>
+            <button className="btn-back" onClick={onCloseMovie}>
+              &larr;
+            </button>
+            <img src={poster} alt={`${title} poster`} />
+            <div className="details-overview">
+              <h2>{title}</h2>
+              <p>
+                {released} &bull; {runtime}
+              </p>
+              <p>{genre}</p>
+              <p>⭐ {imdbRating} IMDb rating</p>
+            </div>
+          </header>
 
-      <section>
-        <StarRating />
-        <p>
-          <em>{plot}</em>
-        </p>
-        <p>Staring {actors}</p>
-        <p>Directed by {director}</p>
-      </section>
+          <section>
+            <div className="rating">
+              <StarRating maxRating={10} size={30} />
+            </div>
+            <p>
+              <em>{plot}</em>
+            </p>
+            <p>Staring {actors}</p>
+            <p>Directed by {director}</p>
+          </section>
+        </>
+      )}
     </div>
   );
 };
