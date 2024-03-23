@@ -17,9 +17,15 @@ export default function StarRating({
   className,
   messages = [],
   defaultRating = 0,
+  onSetRating,
 }) {
   const [rating, setRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
+
+  function handleRating(rating) {
+    setRating(rating);
+    onSetRating(rating);
+  }
 
   const textStyle = {
     linHeight: "1",
@@ -35,7 +41,7 @@ export default function StarRating({
           <span>
             <Star
               key={index}
-              onRate={() => setRating(index + 1)}
+              onRate={() => handleRating(index + 1)}
               full={tempRating ? tempRating >= index + 1 : rating >= index + 1}
               onHoverIn={() => setTempRating(index + 1)}
               onHoverOut={() => setTempRating(0)}
