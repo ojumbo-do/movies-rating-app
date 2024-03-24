@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import StarRating from "./StarRating.js";
+import { useMovies } from "./useMovies.js";
 
 const tempMovieData = [
   {
@@ -55,10 +56,9 @@ const average = (arr) =>
 
 export default function App() {
   const [query, setQuery] = useState("");
-  const [movies, setMovies] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+
+  const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
 
   // const [watched, setWatched] = useState([]);
 
@@ -72,9 +72,9 @@ export default function App() {
     setSelectedId((setSelectedId) => (id === selectedId ? null : id));
   }
 
-  const handleCloseMovie = () => {
+  function handleCloseMovie() {
     setSelectedId(null);
-  };
+  }
 
   //adding a new item/data into an existing array
   const handleAddWatched = (movie) => {
@@ -92,51 +92,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("watched", JSON.stringify(watched));
   }, [watched]);
-
-  useEffect(() => {
-    //Abbort controller API helps cleanup the useEffect it is a browser API
-    const controller = new AbortController();
-
-    async function fetchMovies() {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const response = await fetch(
-          `http://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`,
-          { signal: controller.signal }
-        );
-
-        if (!response.ok)
-          throw new Error("Something went wrong while fetching movies");
-
-        const data = await response.json();
-
-        if (data.Response === "False") throw new Error("Movie(s) not found");
-
-        setMovies(data.Search);
-        setError("");
-      } catch (err) {
-        console.error(err.message);
-
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-
-      if (query.length < 3) {
-        setMovies([]);
-        setError("");
-        return;
-      }
-    }
-
-    handleCloseMovie();
-    fetchMovies();
-    return () => controller.abort();
-  }, [query]);
 
   return (
     <>
@@ -344,6 +299,12 @@ const MovieDetails = ({ selectedId, onCloseMovie, onAddWatched, watched }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState("");
 
+  const countRef = useRef(0);
+
+  useEffect(() => {
+    if (userRating) countRef.current = countRef.current + 1;
+  }, [userRating]);
+
   //checking is a certain Item is contrained an existing list of items
   const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
 
@@ -373,6 +334,7 @@ const MovieDetails = ({ selectedId, onCloseMovie, onAddWatched, watched }) => {
       runtime: Number(runtime.split(" ").at(0)),
       imdbRating: Number(imdbRating),
       userRating: Number(userRating),
+      countRatingDecisions: countRef.current,
     };
 
     onAddWatched(newWatchedMovie);
