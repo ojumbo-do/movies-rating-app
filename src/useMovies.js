@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 
 const API_KEY = "45145fd9";
 
-export function useMovies(query, callback) {
+export function useMovies(query) {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    callback?.();
+    // callback?.();
 
     //Abbort controller API helps cleanup the useEffect it is a browser API
     const controller = new AbortController();
